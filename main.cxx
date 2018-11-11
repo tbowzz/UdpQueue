@@ -5,7 +5,8 @@
 #include "udp/UdpReceiver.h"
 
 #define PORT 5000
-#define PACKET_COUNT 1000000.0f
+#define PACKET_COUNT 2000000.0f
+#define PACKET_SIZE_BYTES 64
 
 int main(int argc, char **argv)
 {
@@ -28,8 +29,7 @@ int main(int argc, char **argv)
 
 		// create a fixed size packet
 		std::vector<unsigned char> packet;
-		int packetSize = 32;
-		for (int ii = 0; ii < packetSize; ii++)
+		for (int ii = 0; ii < PACKET_SIZE_BYTES; ii++)
 		{
 			packet.push_back(0x01);
 		}
@@ -47,9 +47,12 @@ int main(int argc, char **argv)
 		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
 		auto averageTime = duration / PACKET_COUNT;
 		auto avgPacketsPerSecond = 1.0 / (averageTime * 1e-6); // microseconds to seconds
+		auto avgMbpsSent = (avgPacketsPerSecond * PACKET_SIZE_BYTES) * 8e-6;
 
-		UTIL.log(INFO_LOG, "Send duration: %f", duration);
+		UTIL.log(INFO_LOG, "Send duration: %f seconds", (duration * 1e-6));
+		UTIL.log(INFO_LOG, "averageTime: %f microseconds/packet", averageTime);
 		UTIL.log(INFO_LOG, "Average packets sent per second: %f", avgPacketsPerSecond);
+		UTIL.log(INFO_LOG, "Average send speed: %f Mbps", avgMbpsSent);
 	}
 	else if (args[0].compare("recv") == OK)
 	{
@@ -57,8 +60,10 @@ int main(int argc, char **argv)
 		udpReceiver.init(PORT);
 
 		std::vector<unsigned char> packet;
-		int counter = PACKET_COUNT;
+		int counter = PACKET_COUNT / 2.0;
 		UTIL.log(INFO_LOG, "Receiving packets...");
+		udpReceiver.receive(packet); // receive one packet first to start the timer
+
 		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 		while (counter--)
 		{
@@ -67,7 +72,14 @@ int main(int argc, char **argv)
 		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
 		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
-		UTIL.log(INFO_LOG, "Receive duration: %f", duration);
+		auto averageTime = duration / (PACKET_COUNT / 2.0);
+		auto avgPacketsPerSecond = 1.0 / (averageTime * 1e-6); // microseconds to seconds
+		auto avgMbpsReceived = (avgPacketsPerSecond * PACKET_SIZE_BYTES) * 8e-6;
+
+		UTIL.log(INFO_LOG, "Receive duration: %f seconds", (duration * 1e-6));
+		UTIL.log(INFO_LOG, "averageTime: %f microseconds/packet", averageTime);
+		UTIL.log(INFO_LOG, "Average packets received per second: %f", avgPacketsPerSecond);
+		UTIL.log(INFO_LOG, "Average receive speed: %f Mbps", avgMbpsReceived);
 	}
 	else
 	{
