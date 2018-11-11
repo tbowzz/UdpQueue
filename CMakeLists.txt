@@ -61,4 +61,4 @@ add_executable(UdpQueue
         NetworkSender.h
         ReceiveQueue.cxx
         ReceiveQueue.h
-        Singleton.h)
+        Singleton.h TestSender.cxx TestSender.h State.h TestReceiver.cxx TestReceiver.h)
