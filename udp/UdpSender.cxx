@@ -66,7 +66,8 @@ bool UdpSender::send(std::vector<unsigned char> &packet)
 
 	memcpy(buf, packet.data(), packet.size()); // copy the packet to the buffer
 	UTIL.log(DEBUG_LOG, "UDPSENDER: Sending %d bytes.", packet.size());
-	if (sendto(mSockSender, buf, packet.size(), 0, (struct sockaddr *) &mRemoteAddress, slen)==-1)
+	if (sendmmsg(mSockSender, buf, packet.size(), 0) == ERROR)
+//	if (sendto(mSockSender, buf, packet.size(), 0, (struct sockaddr *) &mRemoteAddress, slen) == ERROR)
 	{
 		UTIL.log(ERROR_LOG, "UDPSENDER: Sending failed!");
 		return false;

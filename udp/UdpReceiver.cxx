@@ -57,7 +57,8 @@ bool UdpReceiver::receive(std::vector<unsigned char> &packet)
 
 	// Receive data and print what was received
 	UTIL.log(DEBUG_LOG, "%s: Waiting to receive...", mName.c_str());
-	receiveLen = recvfrom(mSockReceiver, buf, BUF_LEN, 0, (struct sockaddr *)&mRemoteAddress, &addrlen);
+//	receiveLen = recvfrom(mSockReceiver, buf, BUF_LEN, 0, (struct sockaddr *)&mRemoteAddress, &addrlen);
+	receiveLen = recvmmsg(mSockReceiver, buf, BUF_LEN, 0, MSG_WAITFORONE);
 	if (receiveLen > 0)
 	{
 		UTIL.log(DEBUG_LOG, "%s: received %d bytes", mName.c_str(), receiveLen);
